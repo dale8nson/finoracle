@@ -1,6 +1,7 @@
 use crate::COUNTRY;
 use dioxus::prelude::*;
 use serde_json::{Map, Value};
+use std::collections::BTreeMap;
 // use std::env;
 // use std::env::Vars;
 
@@ -39,7 +40,7 @@ pub fn StockList(symbol: Signal<String>) -> Element {
     });
 
     let value = Value::String("".to_string());
-    let mut stock_list: Vec<(String, String)> = {
+    let mut stock_list: BTreeMap<String, String> = {
         let s = &*symbols.read_unchecked();
         if let Some(s) = s {
             // api_key = s.1.clone();
@@ -58,14 +59,16 @@ pub fn StockList(symbol: Signal<String>) -> Element {
                             .as_str()
                             .unwrap_or("")
                             .to_string();
-                        (format!("{symbol}"), format!("{description}"))
+                        (symbol.to_owned(), format!("{symbol}  {description}"))
                     })
-                    .collect::<Vec<(String, String)>>()
+                    // .collect::<Vec<(String, String)>>()
+                    .into_iter()
+                    .collect::<BTreeMap<String, String>>()
             } else {
-                Vec::<(String, String)>::new()
+                BTreeMap::<String, String>::new()
             }
         } else {
-            Vec::<(String, String)>::new()
+            BTreeMap::<String, String>::new()
         }
         // let mut s: Vec<(String, String)> = s
         //     .to_owned()
@@ -91,12 +94,11 @@ pub fn StockList(symbol: Signal<String>) -> Element {
     };
 
     // let stock_list = stock_list.unwrap_or(Vec::<(String, String)>::new());
-    stock_list.sort();
+    // stock_list.sort();
 
-    let stock_list = stock_list.into_iter().filter(|(symbol, desc)| {
-        symbol.as_str().contains(search_term().as_str())
-            || desc.as_str().contains(search_term().as_str())
-    });
+    let stock_list = stock_list
+        .into_iter()
+        .filter(|(_, desc)| desc.as_str().contains(search_term().as_str()));
 
     rsx! {
         div { class:"flex flex-col items-center w-[100%] h-[100%]",
@@ -117,8 +119,8 @@ pub fn StockList(symbol: Signal<String>) -> Element {
                     }
                 }
             }
-            div {class:"border-[#ffffff] w-[100%] h-[90%] flex flex-col p-[0.125rem] w-[100%] overflow-x-hidden",
-                ul {class:"w-[100%] h-[100%] list-none list-outside ml-[0px] pl-[0.5rem]",
+            div {class:"border-[#ffffff] w-[100%] h-[90%] flex flex-col p-[0.125rem] overflow-x-hidden",
+                ul {class:"w-[100%] max-h-[90%] list-none list-outside ml-[0px] pl-[0.5rem]",
             {stock_list.map(|(sym, desc)| {
                 rsx! {
                         li { class: "text-[#ffffff] bg-[#000000] my-[0px] w-full",

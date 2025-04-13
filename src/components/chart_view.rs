@@ -160,7 +160,7 @@ pub fn ChartView(symbol: Signal<String>) -> Element {
         let el = document.get_element_by_id("chart").unwrap();
         let canvas: HtmlCanvasElement = el.dyn_into::<HtmlCanvasElement>().map_err(|_| ()).unwrap();
         canvas.set_width(width as u32);
-        canvas.set_height((height * 0.98f64) as u32);
+        canvas.set_height((height * 0.95f64) as u32);
 
         let ctx = canvas
             .get_context("2d")
@@ -294,15 +294,15 @@ pub fn ChartView(symbol: Signal<String>) -> Element {
     });
 
     rsx! {
-        div {class:"flex flex-col justify-start items-center w-[100%] h-[100%]",
+        div {class:"flex flex-col justify-start items-center m-[0px] w-[100%] h-[100%]",
             div { class:"w-[100%] h-[100%] relative flex flex-col",
-                div { class:"sticky z-50 top-[0px] left-[0px] flex flex-col gap-x-[0.5rem] h-[10%] w-[100%] rounded-t-[0.85rem] bg-[#000]",
-                    button {class:"text-[1.5rem] font-bold w-[100%] cursor-pointer", onclick: move |_| series_btn.set(!series_btn()), {format!("{}", if selected_tab() == "annual" && selected_annual_series().as_str() != "" {selected_annual_series()} else if selected_tab() == "quarterly" && selected_quarterly_series().as_str() != "" {selected_quarterly_series()} else {String::from("Time Series Data")}) }}
+                div { class:"sticky z-50 top-[0px] left-[0px] flex flex-col gap-x-[0.5rem] h-[10%] w-[100%] rounded-t-[0.85rem] bg-[#000] m-[0px]",
+                    button {class:"text-[1.5rem] font-bold w-[100%] cursor-pointer m-[0px]", onclick: move |_| series_btn.set(!series_btn()), {format!("{}", if selected_tab() == "annual" && selected_annual_series().as_str() != "" {selected_annual_series()} else if selected_tab() == "quarterly" && selected_quarterly_series().as_str() != "" {selected_quarterly_series()} else {String::from("Time Series Data")}) }}
         div {class:"flex flex-row", for (k, _) in series().into_iter() {
             {
                 let kpy = k.clone();
                 rsx! {
-                    div {class:"duration-[0.5s]", border_bottom: if kpy.to_owned() == selected_tab() {"solid 2px #ffffff"} else { "none"}, class:"w-[100%] h-[100%] flex flex-row justify-center items-center",
+                    div {class:"w-[100%] h-[100%]", border_bottom: if kpy.to_owned() == selected_tab() {"solid 2px #ffffff"} else { "none"}, class:"w-[100%] h-[100%] flex flex-row justify-center items-center",
                         h2 {class:"my-[0rem]",
                             button {class:"bg-[#000000] text-[#ffffff] border-none text-[1.5rem] cursor-pointer", onclick:move |_| selected_tab.set(kpy.to_owned()) ,
                                 "{kpy.to_owned().to_uppercase().to_owned()}"
@@ -314,7 +314,7 @@ pub fn ChartView(symbol: Signal<String>) -> Element {
         }}
     }
         for (k, v) in series().into_iter() {
-            div {class:"absolute z-0 top-[1rem] left-[0rem] px-[0.5rem] flex flex-col w-[100%] h-[100%] overflow-y-scroll", visibility: if k.to_owned() == selected_tab() {"visible"} else {"hidden"},
+            div {class:"absolute z-0 top-[5rem] left-[0rem] px-[0.5rem] flex flex-col w-[100%] h-[80%] overflow-y-scroll", visibility: if k.to_owned() == selected_tab() {"visible"} else {"hidden"},
 
                 match v {
                     Value::String(s) => rsx! {
@@ -324,12 +324,12 @@ pub fn ChartView(symbol: Signal<String>) -> Element {
 
                         rsx! {
                             div {visibility: if series_btn() && k.to_owned() == selected_tab() {"visible"} else {"hidden"}, class:"flex flex-col justify-start items-start bg-[#0009] h-[100%]",
-                                div { class:"w-[100%] h-[100%] border-none grid grid-cols-4 gap-y-[0.5rem]",
+                                div { class:"w-[100%] h-[100%] border-none grid grid-cols-4 gap-y-[0.25rem]",
                                     for (s, _) in o.into_iter() {
                                         {let s = s.clone();
                                         rsx! {
                                             { let y = k.clone();
-                                        rsx! {div {class:"flex flex-row m-[0px] w-[100%] h-[90%] gap-x-[1rem] items-center justify-start w-[100%]",
+                                        rsx! {div {class:"flex flex-row m-[0px] w-[100%] h-[1.5rem] gap-x-[1rem] items-center justify-start w-[100%]",
                                             input {r#type:"radio", checked: match selected_tab().as_str() {
                                                 "annual" => s == selected_annual_series(),
                                                 "quarterly" => s == selected_quarterly_series(),

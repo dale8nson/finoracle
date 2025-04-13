@@ -97,7 +97,7 @@ pub fn StockView(symbol: Signal<String>) -> Element {
         .to_owned();
 
     rsx! {
-             div {class:"w-full h-[100%] flex flex-col p-[0.75rem] m-[0px] w-[100%] overflow-x-hidden relative",
+             div {class:"w-[100%] h-[100%] flex flex-col p-[0.75rem] m-auto w-[100%] overflow-x-hidden relative",
                  div {position:"sticky",
                      h2 {class:"text-[#ffffff] text-center text-[1.25rem] font-bold",
                          {
@@ -107,7 +107,7 @@ pub fn StockView(symbol: Signal<String>) -> Element {
                      h3 {class:"text-[#ffffff] text-[1rem] text-center", "{symbol}"}
                  }
 
-             div {class:"grid grid-cols-[8fr_1fr] gap-x-[3rem]", visibility: if STOCK_INFO().get("symbol") == None {"hidden"} else {"visible"},
+             div {class:"grid grid-cols-[8fr_1fr] gap-x-[3rem] h-[100%] w-[100%]", visibility: if STOCK_INFO().get("symbol") == None {"hidden"} else {"visible"},
                  h3 {"Current Price"}
                  p {"${current_price}"}
                  h3 {"Previous Close"}
