@@ -56,6 +56,9 @@
 .col-span-3 {
   grid-column: span 3 / span 3;
 }
+.row-span-1 {
+  grid-row: span 1 / span 1;
+}
 .container {
   width: 100%;
 }
@@ -101,14 +104,32 @@
 .h-\[1\.5rem\] {
   height: 1.5rem;
 }
+.h-\[2rem\] {
+  height: 2rem;
+}
+.h-\[4rem\] {
+  height: 4rem;
+}
 .h-\[10\%\] {
   height: 10%;
+}
+.h-\[46\.5vh\] {
+  height: 46.5vh;
+}
+.h-\[47\.5\%\] {
+  height: 47.5%;
 }
 .h-\[48\.75vh\] {
   height: 48.75vh;
 }
 .h-\[50\%\] {
   height: 50%;
+}
+.h-\[50vh\] {
+  height: 50vh;
+}
+.h-\[75\%\] {
+  height: 75%;
 }
 .h-\[80\%\] {
   height: 80%;
@@ -122,11 +143,29 @@
 .h-\[95\%\] {
   height: 95%;
 }
+.h-\[95vh\%\] {
+  height: 95vh%;
+}
 .h-\[95vh\] {
   height: 95vh;
 }
+.h-\[97\%\] {
+  height: 97%;
+}
+.h-\[98\%\] {
+  height: 98%;
+}
+.h-\[99\%\] {
+  height: 99%;
+}
+.h-\[99\.5\%\] {
+  height: 99.5%;
+}
 .h-\[100\%\] {
   height: 100%;
+}
+.h-\[100vh\] {
+  height: 100vh;
 }
 .h-auto {
   height: auto;
@@ -142,6 +181,15 @@
 }
 .min-h-\[50\%\] {
   min-height: 50%;
+}
+.min-h-\[100\%\] {
+  min-height: 100%;
+}
+.w-\[30\%\] {
+  width: 30%;
+}
+.w-\[40\%\] {
+  width: 40%;
 }
 .w-\[45\%\] {
   width: 45%;
@@ -160,6 +208,12 @@
 }
 .w-\[100vw\] {
   width: 100vw;
+}
+.w-\[R\^��\2 s\] {
+  width: R^��s;
+}
+.w-\[R\^��\2 �\] {
+  width: R^���;
 }
 .w-full {
   width: 100%;
@@ -191,6 +245,9 @@
 .grid-cols-\[8fr_1fr\] {
   grid-template-columns: 8fr 1fr;
 }
+.grid-rows-2 {
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+}
 .flex-col {
   flex-direction: column;
 }
@@ -221,6 +278,9 @@
 .gap-x-\[1rem\] {
   column-gap: 1rem;
 }
+.gap-x-\[2rem\] {
+  column-gap: 2rem;
+}
 .gap-x-\[3rem\] {
   column-gap: 3rem;
 }
@@ -241,6 +301,9 @@
 }
 .overflow-x-hidden {
   overflow-x: hidden;
+}
+.overflow-y-hidden {
+  overflow-y: hidden;
 }
 .overflow-y-scroll {
   overflow-y: scroll;
@@ -346,6 +409,9 @@
 .duration-\[0\.25s\] {
   --tw-duration: 0.25s;
   transition-duration: 0.25s;
+}
+.\[f\:\10 \12 Ƹg�\7f \] {
+  f: Ƹg�;
 }
 .hover\:translate-x-\[-0\.2rem\] {
   &:hover {

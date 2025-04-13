@@ -65,7 +65,7 @@ impl From<DataPoint> for String {
 }
 
 #[component]
-pub fn ChartView(symbol: Signal<String>) -> Element {
+pub fn ChartView(symbol: Signal<(String, String)>) -> Element {
     let api_key: &'static str = env!("FINNHUB_API_KEY");
 
     let mut selected_tab = use_signal(|| String::from("annual"));
@@ -78,11 +78,12 @@ pub fn ChartView(symbol: Signal<String>) -> Element {
     let dummy_val = Value::Null;
     let mut selected_financial: Signal<Option<(String, Value)>> = use_signal(|| None);
     let mut canvas: Signal<Option<Event<MountedData>>> = use_signal(|| None);
+    let mut size: Signal<Option<(f64, f64)>> = use_signal(|| None);
 
     let ak = api_key.to_owned();
     let financials = use_resource(move || {
         let ak = ak.clone();
-        async move { get_basic_financials(symbol(), ak).await }
+        async move { get_basic_financials(symbol().0, ak).await }
     });
 
     let mut series = use_signal(|| Map::<String, Value>::new());
@@ -106,6 +107,13 @@ pub fn ChartView(symbol: Signal<String>) -> Element {
                 .unwrap_or(&Map::<String, Value>::new())
                 .to_owned(),
         );
+    });
+
+    use_effect(move || {
+        let document = web_sys::window().unwrap().document().unwrap();
+        let container = document.get_element_by_id("chart-container").unwrap();
+        let rect = container.get_bounding_client_rect();
+        size.set(Some((rect.width(), rect.height())));
     });
 
     use_effect(move || {
@@ -153,148 +161,146 @@ pub fn ChartView(symbol: Signal<String>) -> Element {
         }
 
         let document = web_sys::window().unwrap().document().unwrap();
-        let container = document.get_element_by_id("chart-container").unwrap();
-        let rect = container.get_bounding_client_rect();
-        let width = rect.width();
-        let height = rect.height();
         let el = document.get_element_by_id("chart").unwrap();
         let canvas: HtmlCanvasElement = el.dyn_into::<HtmlCanvasElement>().map_err(|_| ()).unwrap();
-        canvas.set_width(width as u32);
-        canvas.set_height((height * 0.95f64) as u32);
+        if let Some(size) = size() {
+            canvas.set_width(size.0 as u32);
+            canvas.set_height((size.1 * 0.9f64) as u32);
 
-        let ctx = canvas
-            .get_context("2d")
-            .unwrap()
-            .unwrap()
-            .dyn_into::<CanvasRenderingContext2d>()
-            .unwrap();
+            let ctx = canvas
+                .get_context("2d")
+                .unwrap()
+                .unwrap()
+                .dyn_into::<CanvasRenderingContext2d>()
+                .unwrap();
 
-        ctx.set_stroke_style_str("rgb(238, 0, 0)");
-        ctx.set_fill_style_str("rgb(238,0,0)");
-        ctx.set_line_width(2.0);
+            ctx.set_stroke_style_str("rgb(238, 0, 0)");
+            ctx.set_fill_style_str("rgb(238,0,0)");
+            ctx.set_line_width(2.0);
 
-        ctx.move_to(
-            0.1f64 * canvas.width() as f64,
-            0.01f64 * canvas.height() as f64,
-        );
-        ctx.line_to(
-            0.1f64 * canvas.width() as f64,
-            0.9f64 * canvas.height() as f64,
-        );
-        ctx.line_to(
-            0.95f64 * canvas.width() as f64,
-            0.9f64 * canvas.height() as f64,
-        );
+            ctx.move_to(
+                0.1f64 * canvas.width() as f64,
+                0.01f64 * canvas.height() as f64,
+            );
+            ctx.line_to(
+                0.1f64 * canvas.width() as f64,
+                0.9f64 * canvas.height() as f64,
+            );
+            ctx.line_to(
+                0.95f64 * canvas.width() as f64,
+                0.9f64 * canvas.height() as f64,
+            );
 
-        ctx.stroke();
+            ctx.stroke();
 
-        let default_max_date = NaiveDate::from_ymd_opt(2025, 7, 1).unwrap();
-        let default_min_date = NaiveDate::from_ymd_opt(2000, 1, 1).unwrap();
+            let default_max_date = NaiveDate::from_ymd_opt(2025, 7, 1).unwrap();
+            let default_min_date = NaiveDate::from_ymd_opt(2000, 1, 1).unwrap();
 
-        let x_max = dates.iter().max().unwrap_or(&default_max_date);
-        let x_min = dates.iter().min().unwrap_or(&default_min_date);
-        let y_max = values
-            .iter()
-            .max_by(|x, y| {
-                if **x < **y {
-                    Ordering::Less
-                } else if **x > **y {
-                    Ordering::Greater
-                } else {
-                    Ordering::Equal
-                }
-            })
-            .unwrap_or(&5000.0);
+            let x_max = dates.iter().max().unwrap_or(&default_max_date);
+            let x_min = dates.iter().min().unwrap_or(&default_min_date);
+            let y_max = values
+                .iter()
+                .max_by(|x, y| {
+                    if **x < **y {
+                        Ordering::Less
+                    } else if **x > **y {
+                        Ordering::Greater
+                    } else {
+                        Ordering::Equal
+                    }
+                })
+                .unwrap_or(&5000.0);
 
-        let y_min = values
-            .iter()
-            .min_by(|x, y| {
-                if **x < **y {
-                    Ordering::Less
-                } else if **x > **y {
-                    Ordering::Greater
-                } else {
-                    Ordering::Equal
-                }
-            })
-            .unwrap_or(&0.0);
+            let y_min = values
+                .iter()
+                .min_by(|x, y| {
+                    if **x < **y {
+                        Ordering::Less
+                    } else if **x > **y {
+                        Ordering::Greater
+                    } else {
+                        Ordering::Equal
+                    }
+                })
+                .unwrap_or(&0.0);
 
-        // ctx.move_to(0.25 * canvas.width() as f64, 0.05 * canvas.height() as f64);
-        ctx.set_font("20px sans-serif");
-        let step = (x_max.year() as usize - x_min.year() as usize) / 5;
+            // ctx.move_to(0.25 * canvas.width() as f64, 0.05 * canvas.height() as f64);
+            ctx.set_font("20px sans-serif");
+            let step = (x_max.year() as usize - x_min.year() as usize) / 5;
 
-        if step > 0 {
-            for year in (x_min.year()..=x_max.year())
-                .step_by((x_max.year() as usize - x_min.year() as usize) / 5)
-            {
-                let x = ((year - x_min.year()) as f64 / (x_max.year() - x_min.year()) as f64)
+            if step > 0 {
+                for year in (x_min.year()..=x_max.year())
+                    .step_by((x_max.year() as usize - x_min.year() as usize) / 5)
+                {
+                    let x = ((year - x_min.year()) as f64 / (x_max.year() - x_min.year()) as f64)
                 * (0.85 * canvas.width() as f64)
                 + 0.075 * canvas.width() as f64
                 // - 0.025 * canvas.width() as f64
                 ;
 
+                    let _ = ctx.fill_text(
+                        format!("{year}").as_str(),
+                        x as f64,
+                        0.95 * canvas.height() as f64,
+                    );
+                }
+            }
+
+            let y_start = *y_min;
+            // y_start.set(*y_min);
+            let y_end = *y_max;
+            // y_end.set(*y_max);
+            //
+            xmin.set(x_min.year());
+            xmax.set(x_max.year());
+            ymin.set(*y_min);
+            ymax.set(*y_max);
+
+            for value in 0..10 {
+                let y = 0.95 * canvas.height() as f64
+                    - (value as f64 / 10.0) * (0.95 * canvas.height() as f64)
+                    - 0.04 * canvas.height() as f64;
                 let _ = ctx.fill_text(
-                    format!("{year}").as_str(),
-                    x as f64,
-                    0.95 * canvas.height() as f64,
+                    format!("{:.2}", y_start + value as f64 * (y_end / 10.0)).as_str(),
+                    0.005 * canvas.width() as f64,
+                    y,
                 );
             }
-        }
+            ctx.stroke();
 
-        let y_start = *y_min;
-        // y_start.set(*y_min);
-        let y_end = *y_max;
-        // y_end.set(*y_max);
-        //
-        xmin.set(x_min.year());
-        xmax.set(x_max.year());
-        ymin.set(*y_min);
-        ymax.set(*y_max);
+            if values.len() > 0 && dates.len() > 0 {
+                let max_days = ts
+                    .iter()
+                    .max()
+                    .unwrap_or(&DataPoint {
+                        period: NaiveDate::from_ymd_opt(2025, 7, 1).unwrap(),
+                        v: 0.0,
+                    })
+                    .period
+                    .signed_duration_since(*x_min)
+                    .num_days();
 
-        for value in 0..10 {
-            let y = 0.95 * canvas.height() as f64
-                - (value as f64 / 10.0) * (0.95 * canvas.height() as f64)
-                - 0.04 * canvas.height() as f64;
-            let _ = ctx.fill_text(
-                format!("{:.2}", y_start + value as f64 * (y_end / 10.0)).as_str(),
-                0.005 * canvas.width() as f64,
-                y,
-            );
-        }
-        ctx.stroke();
+                ctx.move_to(
+                    0.1f64 * canvas.width() as f64,
+                    0.9f64 * canvas.height() as f64
+                        - ((values[0] - *y_min) / y_max) * 0.9 * canvas.height() as f64,
+                );
 
-        if values.len() > 0 && dates.len() > 0 {
-            let max_days = ts
-                .iter()
-                .max()
-                .unwrap_or(&DataPoint {
-                    period: NaiveDate::from_ymd_opt(2025, 7, 1).unwrap(),
-                    v: 0.0,
-                })
-                .period
-                .signed_duration_since(*x_min)
-                .num_days();
-
-            ctx.move_to(
-                0.1f64 * canvas.width() as f64,
-                0.9f64 * canvas.height() as f64
-                    - ((values[0] - *y_min) / y_max) * 0.9 * canvas.height() as f64,
-            );
-
-            for dp in &ts {
-                let days = dp.period.signed_duration_since(*x_min).num_days();
-                let x = 0.1 * canvas.width() as f64
-                    + days as f64 / max_days as f64 * 0.85 * canvas.width() as f64;
-                let y = 0.9 * canvas.height() as f64
-                    - (dp.v - *y_min) / *y_max * 0.9 * canvas.height() as f64;
-                ctx.line_to(x, y);
-                ctx.stroke();
+                for dp in &ts {
+                    let days = dp.period.signed_duration_since(*x_min).num_days();
+                    let x = 0.1 * canvas.width() as f64
+                        + days as f64 / max_days as f64 * 0.85 * canvas.width() as f64;
+                    let y = 0.9 * canvas.height() as f64
+                        - (dp.v - *y_min) / *y_max * 0.9 * canvas.height() as f64;
+                    ctx.line_to(x, y);
+                    ctx.stroke();
+                }
             }
         }
     });
 
     rsx! {
-        div {class:"flex flex-col justify-start items-center m-[0px] w-[100%] h-[100%]",
+        div {class:"flex flex-col justify-start items-center m-[0px] w-[100%] h-[50vh]",
             div { class:"w-[100%] h-[100%] relative flex flex-col",
                 div { class:"sticky z-50 top-[0px] left-[0px] flex flex-col gap-x-[0.5rem] h-[10%] w-[100%] rounded-t-[0.85rem] bg-[#000] m-[0px]",
                     button {class:"text-[1.5rem] font-bold w-[100%] cursor-pointer m-[0px]", onclick: move |_| series_btn.set(!series_btn()), {format!("{}", if selected_tab() == "annual" && selected_annual_series().as_str() != "" {selected_annual_series()} else if selected_tab() == "quarterly" && selected_quarterly_series().as_str() != "" {selected_quarterly_series()} else {String::from("Time Series Data")}) }}

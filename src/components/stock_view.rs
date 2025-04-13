@@ -11,19 +11,19 @@ use serde_json::{Map, Number, Value};
 // }
 
 #[component]
-pub fn StockView(symbol: Signal<String>) -> Element {
+pub fn StockView(symbol: Signal<(String, String)>) -> Element {
     let api_key: &'static str = env!("FINNHUB_API_KEY");
 
     let ak = api_key.to_owned();
     let stock = use_resource(move || {
         let ak = ak.clone();
-        async move { get_stock_quote(symbol(), ak).await }
+        async move { get_stock_quote(symbol().0, ak).await }
     });
 
     let ak = api_key.to_owned();
     let financials = use_resource(move || {
         let ak = ak.clone();
-        async move { get_basic_financials(symbol(), ak.to_string()).await }
+        async move { get_basic_financials(symbol().0, ak.to_string()).await }
     });
 
     let quote = stock
@@ -31,12 +31,7 @@ pub fn StockView(symbol: Signal<String>) -> Element {
         .to_owned()
         .unwrap_or(Ok(Map::<String, Value>::new()))
         .unwrap_or(Map::<String, Value>::new());
-    // let sym = STOCK_INFO()
-    //     .get("symbol")
-    //     .unwrap_or(&Value::String("Computer says no".to_string()))
-    //     .as_str()
-    //     .unwrap()
-    //     .to_string();
+
     let current_price = quote
         .to_owned()
         .get("c")
@@ -44,6 +39,7 @@ pub fn StockView(symbol: Signal<String>) -> Element {
         .as_f64()
         .unwrap()
         .to_string();
+
     let opening_price = quote
         .to_owned()
         .get("o")
@@ -86,6 +82,7 @@ pub fn StockView(symbol: Signal<String>) -> Element {
         .as_f64()
         .unwrap_or(-9999.0)
         .to_string();
+
     let metrics = financials
         .read_unchecked()
         .to_owned()
@@ -96,15 +93,24 @@ pub fn StockView(symbol: Signal<String>) -> Element {
         .unwrap_or(&Value::Object(Map::<String, Value>::new()))
         .to_owned();
 
+    let desc = financials
+        .read_unchecked()
+        .to_owned()
+        .unwrap_or(Ok(<Map<String, Value>>::new()))
+        .ok()
+        .unwrap()
+        .get("description")
+        .unwrap_or(&Value::Object(Map::<String, Value>::new()))
+        .to_owned()
+        .as_str()
+        .unwrap_or(format!("{quote:?}").as_str())
+        .to_owned();
+
     rsx! {
-             div {class:"w-[100%] h-[100%] flex flex-col p-[0.75rem] m-auto w-[100%] overflow-x-hidden relative",
+             div {class:"w-[100%] h-[100%] flex flex-col p-[0.75rem] m-auto w-[100%] overflow-y-scroll relative",
                  div {position:"sticky",
-                     h2 {class:"text-[#ffffff] text-center text-[1.25rem] font-bold",
-                         {
-                             quote.to_owned().get("description").unwrap_or(&Value::String("".to_string())).as_str().unwrap()
-             }
-                     }
-                     h3 {class:"text-[#ffffff] text-[1rem] text-center", "{symbol}"}
+                     h2 {class:"text-[#ffffff] text-center text-[1.5rem] font-bold",{format!("{}", symbol().1)}}
+                     h3 {class:"text-[#ffffff] text-[1rem] text-center", {format!("{}", symbol().0)}}
                  }
 
              div {class:"grid grid-cols-[8fr_1fr] gap-x-[3rem] h-[100%] w-[100%]", visibility: if STOCK_INFO().get("symbol") == None {"hidden"} else {"visible"},

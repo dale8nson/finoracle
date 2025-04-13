@@ -9,7 +9,7 @@ pub static STOCK_INFO: GlobalSignal<Map<String, Value>> =
     Global::new(|| Map::<String, Value>::new());
 
 #[component]
-pub fn StockList(symbol: Signal<String>) -> Element {
+pub fn StockList(symbol: Signal<(String, String)>) -> Element {
     let api_key: &'static str = env!("FINNHUB_API_KEY");
 
     let mut search_term = use_signal(|| String::from(""));
@@ -59,7 +59,7 @@ pub fn StockList(symbol: Signal<String>) -> Element {
                             .as_str()
                             .unwrap_or("")
                             .to_string();
-                        (symbol.to_owned(), format!("{symbol}  {description}"))
+                        (symbol.to_owned(), description.to_owned())
                     })
                     // .collect::<Vec<(String, String)>>()
                     .into_iter()
@@ -70,18 +70,7 @@ pub fn StockList(symbol: Signal<String>) -> Element {
         } else {
             BTreeMap::<String, String>::new()
         }
-        // let mut s: Vec<(String, String)> = s
-        //     .to_owned()
-        //     .unwrap_or(Ok(Vec::<Map<String, Value>>::new()))
-        //     .unwrap()
-        //     .collect::<Vec<(String, String)>>();
-        // s.sort();
-        // Some(s)
     };
-    //     else {
-    //         None
-
-    // }
 
     let find_match = move |sym: String| match &*symbols.read_unchecked() {
         Some(Ok(s)) => s
@@ -96,14 +85,15 @@ pub fn StockList(symbol: Signal<String>) -> Element {
     // let stock_list = stock_list.unwrap_or(Vec::<(String, String)>::new());
     // stock_list.sort();
 
-    let stock_list = stock_list
-        .into_iter()
-        .filter(|(_, desc)| desc.as_str().contains(search_term().as_str()));
+    let stock_list = stock_list.into_iter().filter(|(symbol, desc)| {
+        symbol.as_str().contains(search_term().as_str())
+            || desc.as_str().contains(search_term().as_str())
+    });
 
     rsx! {
-        div { class:"flex flex-col items-center w-[100%] h-[100%]",
-            div {border_bottom:"solid #fff", border_right: "none", border_top: "none", class:"flex flex-row justify-between items-center w-[100%] h-[10%] overflow-y-clipped",
-                input {oninput:onvaluechange, border_bottom:"solid #fff",  class:"mt-[0.6rem] px-[1rem] h-[95%] py-[0.25rem] w-[100%] text-[1.5rem] border-none  fixed z-[10] top-0 left-0 bg-[#000000] text-[#ffffff] relative", placeholder:"Search for a symbol..."}
+        div { class:"flex flex-col justify-start items-center w-[100%] h-[99.5%]",
+            div {border_bottom:"solid #fff", border_right: "none", border_top: "none", class:"flex flex-row justify-between items-center w-[100%] h-[4rem] overflow-y-clipped",
+                input {onchange:onvaluechange, border_bottom:"solid #fff",  class:"mt-[0.6rem] px-[1rem] h-[95%] py-[0.25rem] w-[100%] text-[1.5rem] border-none  fixed z-[10] top-0 left-0 bg-[#000000] text-[#ffffff] relative", placeholder:"Search for a symbol..."}
                 div { class:"grid grid-cols-4 px-[1rem] h-[100%] gap-x-[0.25rem] items-center w-[60%]",
                     div {class:"flex flex-col justify-center items-center",
                         label {for:"US", "US"}
@@ -124,15 +114,14 @@ pub fn StockList(symbol: Signal<String>) -> Element {
             {stock_list.map(|(sym, desc)| {
                 rsx! {
                         li { class: "text-[#ffffff] bg-[#000000] my-[0px] w-full",
-                            button {color: if sym.to_owned() == symbol() {"#0000ee"} else {"#ffffff"} , onclick:move |_| { symbol.set(sym.to_owned()); *STOCK_INFO.write() = find_match(sym.to_owned())},class:"border-none grid-cols-4 hover:cursor-pointer hover:text-[#0000ee] bg-[#000000] text-left text-[#ffffff] w-[100%] font-bold text-[1.125rem] my-[0px] py-0 mx-[5px]", display:"grid",
+                            button {color: if sym.to_owned() == symbol().0 {"#0000ee"} else {"#ffffff"} , onclick:move |_| { symbol.set((sym.to_owned(), desc.to_owned())); *STOCK_INFO.write() = find_match(sym.to_owned())},class:"border-none grid-cols-4 hover:cursor-pointer hover:text-[#0000ee] bg-[#000000] text-left text-[#ffffff] w-[100%] font-bold text-[1.125rem] my-[0px] py-0 mx-[5px]", display:"grid",
                                 div {class:"text-left flex flex-row justify-start items-center", {sym.to_owned()}}
-                        div {class:"flex col-span-3 flex-row justify-start items-center text-left", {desc}}
+                        div {class:"flex col-span-3 flex-row justify-start items-center text-left", {desc.to_owned()}}
                             }
                         }
                 }
 
             })
-            // .collect::<Vec<Result<VNode, RenderError>>>()}
             }
                 }
             }
