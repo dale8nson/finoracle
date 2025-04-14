@@ -165,7 +165,7 @@ pub fn ChartView(symbol: Signal<(String, String)>) -> Element {
         let canvas: HtmlCanvasElement = el.dyn_into::<HtmlCanvasElement>().map_err(|_| ()).unwrap();
         if let Some(size) = size() {
             canvas.set_width(size.0 as u32);
-            canvas.set_height((size.1 * 0.9f64) as u32);
+            canvas.set_height((size.1 * 0.7f64) as u32);
 
             let ctx = canvas
                 .get_context("2d")
