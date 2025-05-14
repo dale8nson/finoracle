@@ -93,7 +93,7 @@ pub fn StockList(symbol: Signal<(String, String)>) -> Element {
     rsx! {
         div { class:"flex flex-col justify-start items-center w-[100%] h-[99.5%]",
             div {border_bottom:"solid #fff", border_right: "none", border_top: "none", class:"flex flex-row justify-between items-center w-[100%] h-[4rem] overflow-y-clipped",
-                input {onchange:onvaluechange, border_bottom:"solid #fff",  class:"mt-[0.6rem] px-[1rem] h-[95%] py-[0.25rem] w-[100%] text-[1.5rem] border-none  fixed z-[10] top-0 left-0 bg-[#000000] text-[#ffffff] relative", placeholder:"Search for a symbol..."}
+                input {onchange:onvaluechange, class:"my-[0.6rem] px-[1rem] h-[95%] py-[0.25rem] w-[100%] text-[1.5rem] border-none  fixed z-[10] top-0 left-0 bg-[#000000] text-[#ffffff] relative", placeholder:"Search for a symbol..."}
                 div { class:"grid grid-cols-4 px-[1rem] h-[100%] gap-x-[0.25rem] items-center w-[60%]",
                     div {class:"flex flex-col justify-center items-center",
                         label {for:"US", "US"}
