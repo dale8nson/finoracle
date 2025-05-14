@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="./assets/finoracle-logo.svg" alt="Finoracle Logo" width="700" />
+    <img src="./assets/finoracle-logo.svg" alt="Finoracle Logo" width="600" />
 </p>
 <br>
 
@@ -41,7 +41,7 @@ While inspired by high-frequency trading (HFT), Finoracle is not an institutiona
 - 💹 Real-time trade simulation and latency benchmarking
 - 📊 Visualization of trade signals, position history, and PnL
 - 📦 Rust crate extraction for shared data and execution logic
- 
+
 ---
 
 ## 🧱 Tech Stack
