@@ -1,7 +1,7 @@
 <p align="center">
   <img src="./assets/finoracle-logo.svg" alt="Finoracle Logo" width="700" />
 </p>
-<br><br>
+<br>
 
 # Finoracle
 
