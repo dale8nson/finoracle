@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/finoracle-logo-larger-text.svg" alt="Finoracle Logo" width="700" />
+  <img src="./assets/finoracle-logo-larger-text-with-arrow.svg" alt="Finoracle Logo" width="700" />
 </p>
 <br><br>
 
